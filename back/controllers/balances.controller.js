@@ -16,13 +16,14 @@ exports.depositBalance = async (req, res) => {
   try {
     const totalSubmission = await Submission.sum('price', {
         where: {
-          paid: 0
+          paid: {[Op.eq]: 0}
         },
         include: {
           model: Agreement,
+          attributes: [],
           where: {
-            BuyerId: accountId,
-            status: 'in_progress'
+            BuyerId: {[Op.eq]: parseInt(accountId)},
+            status: {[Op.eq]: 'in_progress'}
           }
         }
       }
@@ -44,7 +45,7 @@ exports.depositBalance = async (req, res) => {
 
     if(amountToDeposit > (totalSubmission*0.1)) {
       res.status(404).send({
-        message: "A buyer can not deposit more than 10% of their total submissions"
+        message: `A buyer can not deposit more than 10% of their total submissions, total submission: ${totalSubmission}`
       });
       return;
     }
@@ -53,7 +54,9 @@ exports.depositBalance = async (req, res) => {
     buyerFound.balance += amountToDeposit;
     await buyerFound.save()
     
-    res.send({buyerFound});
+    res.send({
+      message: "buyer has been desposited succesfuly"
+    });
 
   } catch (error) {
     res.status(500).send({

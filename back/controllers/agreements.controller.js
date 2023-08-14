@@ -1,8 +1,48 @@
-const { Agreement } = require("../models");
+const { Agreement, Account, Submission } = require("../models");
 const { Op } = require("sequelize");
 
+exports.findAllAccount = (req, res) => {
+  Account.findAll({
+    attributes: [
+      "id",
+      "firstName",
+      "lastName",
+      "profession",
+      "balance",
+      "type"
+    ]
+  })
+    .then(data => {
+      res.send(data);
+    })
+    .catch(err => {
+      res.status(500).send({
+        message:
+          err.message || "Some error occurred while retrieving all account."
+      });
+    });
+};
+
 exports.findAll = (req, res) => {
-  Agreement.findAll({ where: {status: {[Op.ne]: 'terminated'}} })
+  Agreement.findAll({ 
+    where: {status: {[Op.ne]: 'terminated'}}, 
+    include: [
+      {
+        model: Account,        
+        as: 'Supplier',
+        attributes: [
+          'firstName', 'lastName'
+        ],
+      },
+      {
+        model: Account,
+        as: 'Buyer',
+        attributes: [
+          'firstName', 'lastName'
+        ]
+      }
+    ]
+  })
     .then(data => {
       res.send(data);
     })

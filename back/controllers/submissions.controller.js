@@ -3,14 +3,20 @@ const { db } = require('../lib/orm');
 const { Agreement, Submission, Account } = require("../models");
 
 exports.findAllUnpaid = (req, res) => {
-  Agreement.findAll({
+  Submission.findAll({
     where: {
-      status: {[Op.eq]: 'in_progress'},
+      paid: { [Op.eq]: 0 }
     },
     include: {
-      model: Submission,
+      model: Agreement,
+      attributes: ['status'],
       where: {
-        paid: { [Op.eq]: 0 }
+        status: {[Op.eq]: 'in_progress'},
+      },
+      include: {
+        model: Account,
+        as: 'Buyer',
+        attributes: ['firstName', 'lastName', 'balance']
       }
     }
   })
@@ -76,7 +82,9 @@ exports.paySubmission = async (req, res) => {
     await Supplier.save({ transaction }) 
 
     await transaction.commit()
-    res.send(submissionFound);
+    res.send({
+      message: "The submission has been paid successfuly"
+    });
 
   } catch (error) {
 

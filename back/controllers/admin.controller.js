@@ -46,8 +46,15 @@ exports.bestSupplierProfession = async (req, res) => {
       group: ['Agreement.Supplier.id'],
       order: [[col("totalAmount"), "DESC"]]
     });
+
+    if(!submissionGroup) {
+      res.status(404).send({
+        message: 'No best supplier found'
+      });
+      return 
+    }
     
-    res.send(submissionGroup);
+    res.send(submissionGroup.Agreement.Supplier);
 
   } catch (error) {
     res.status(500).send({
